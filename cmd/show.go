@@ -14,7 +14,11 @@ var showCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		s, _ := loadLootFile()
-		e, err := s.Get(args[0])
+		id, err := s.FindID(args[0])
+		if err != nil {
+			bail(err)
+		}
+		e, err := s.Get(id)
 		if err != nil {
 			bail(err)
 		}
