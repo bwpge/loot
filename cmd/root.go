@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 
 	"loot/internal"
@@ -15,11 +16,41 @@ import (
 
 const lootFileName = "loot.json"
 
-var lootFile string
+var (
+	Version  = "0.1.0"
+	Commit   = ""
+	lootFile string
+)
+
+func buildVersion() string {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return Version
+	}
+
+	if Commit == "" {
+		for _, setting := range info.Settings {
+			if setting.Key == "vcs.revision" {
+				Commit = setting.Value
+				if len(Commit) > 7 {
+					Commit = Commit[:7]
+				}
+				break
+			}
+		}
+	}
+
+	if Commit != "" {
+		return Version + " (" + Commit + ")"
+	}
+
+	return Version
+}
 
 var rootCmd = &cobra.Command{
-	Use:   "loot",
-	Short: "Tool for storing and organizing loot during offensive security operations",
+	Use:     "loot",
+	Version: buildVersion(),
+	Short:   "Tool for storing and organizing loot during offensive security operations",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		var err error
 		if lootFile == "" {
@@ -38,6 +69,9 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.PersistentFlags().
 		StringVarP(&lootFile, "loot-file", "L", "", "explicit loot file path to use")
+	rootCmd.SetVersionTemplate(
+		`{{printf "%s %s" .Name .Version}}`,
+	)
 }
 
 func Execute() {
