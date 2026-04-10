@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"loot/internal"
+	"loot/internal/config"
 	"loot/internal/ui"
 
 	"github.com/spf13/cobra"
@@ -62,6 +63,15 @@ var rootCmd = &cobra.Command{
 			return err
 		}
 
+		configFile, err := findConfigFile()
+		if err != nil {
+			warn("failed to locate config file:", err)
+		}
+		err = config.Load(configFile)
+		if err != nil {
+			warn("failed to load config:", err)
+		}
+
 		return nil
 	},
 }
@@ -103,6 +113,25 @@ func findLootFile() (string, error) {
 	}
 
 	return filepath.Join(cwd, lootFileName), nil
+}
+
+func findConfigFile() (string, error) {
+	confDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+	paths := []string{confDir + "/loot/config.json", "/etc/loot.json"}
+
+	for _, f := range paths {
+		_, err := os.Stat(f)
+		if err == nil {
+			return f, nil
+		} else if !errors.Is(err, os.ErrNotExist) {
+			return "", err
+		}
+	}
+
+	return "", nil
 }
 
 func loadLootFile() (*internal.State, string) {

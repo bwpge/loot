@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"loot/internal"
+	"loot/internal/config"
 	"loot/internal/ui"
 
 	"github.com/spf13/cobra"
@@ -51,7 +52,7 @@ var addCmd = &cobra.Command{
 
 		for _, arg := range args {
 			user, pass, found := strings.Cut(arg, ":")
-			if s.Config.DetectType && found && !strings.HasPrefix(pass, "//") {
+			if config.Get().DetectType && found && !strings.HasPrefix(pass, "//") {
 				fmt.Println("detected username:password format")
 				doAdd(
 					internal.Entry{
@@ -116,6 +117,6 @@ func init() {
 	addCmd.Flags().
 		StringVarP(&addComment, "comment", "c", "", "Additional note to store with the entry")
 	addCmd.Flags().
-		StringSliceVarP(&addHosts, "default-hosts", "H", []string{}, "Default host attribution for new entries")
+		StringSliceVarP(&addHosts, "hosts", "H", []string{}, "Host attribution for new entries")
 	rootCmd.AddCommand(addCmd)
 }

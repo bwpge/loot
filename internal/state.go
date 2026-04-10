@@ -8,6 +8,8 @@ import (
 	"os"
 	"slices"
 	"strings"
+
+	"loot/internal/config"
 )
 
 type Entry struct {
@@ -17,26 +19,19 @@ type Entry struct {
 	Hosts   []string `json:"hosts"`
 }
 
-type Config struct {
-	DetectType   bool     `json:"detect_type"`
-	DefaultHosts []string `json:"default_hosts"`
-}
-
 var (
 	errEntryNotFound = errors.New("entry id not found")
 	errAmbiguousID   = errors.New("id matches multiple entries")
 )
 
 type State struct {
-	Config Config           `json:"config"`
 	Hashes HashSet          `json:"hashes"`
 	Data   map[string]Entry `json:"data"`
 }
 
-func NewState(conf Config) *State {
+func NewState() *State {
 	return &State{
-		Config: conf,
-		Data:   make(map[string]Entry),
+		Data: make(map[string]Entry),
 	}
 }
 
@@ -77,7 +72,7 @@ func (s *State) Add(e Entry) string {
 	}
 
 	if len(e.Hosts) == 0 {
-		e.Hosts = s.Config.DefaultHosts
+		e.Hosts = config.Get().DefaultHosts
 	}
 
 	s.Data[id] = e

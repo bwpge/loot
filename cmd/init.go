@@ -38,10 +38,7 @@ var initCmd = &cobra.Command{
 			bail(err)
 		}
 
-		s := internal.NewState(internal.Config{
-			DetectType:   initDetectType,
-			DefaultHosts: initDefaultHosts,
-		})
+		s := internal.NewState()
 		err := s.Save(lootFile)
 		if err != nil {
 			bail(err)

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"loot/internal/config"
 	"loot/internal/ui"
 
 	"github.com/spf13/cobra"
@@ -26,7 +27,7 @@ var statusCmd = &cobra.Command{
 		fmt.Println(ui.Header("Entries:"), len(s.Data))
 		fmt.Println(ui.Header("Unique values:"), len(s.Hashes))
 		fmt.Println(ui.Header("Config:"))
-		printJSON(&s.Config)
+		printJSON(config.Get())
 	},
 }
 
