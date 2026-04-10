@@ -47,9 +47,9 @@ func init() {
 	showCmd.Flags().
 		BoolVarP(&showNoNewline, "no-newline", "n", false, "Do not display a trailing newline")
 	showCmd.Flags().
-		StringSliceVarP(&showTags, "tag", "t", []string{}, "Only display entries with given tags")
+		StringSliceVarP(&showTags, "tag", "t", []string{}, "Only display entries matching given tags")
 	showCmd.Flags().
-		StringSliceVarP(&showHosts, "host", "H", []string{}, "Only display entries with given hosts")
+		StringSliceVarP(&showHosts, "host", "H", []string{}, "Only display entries matching given hosts")
 	showCmd.Flags().
 		StringVarP(&showSep, "separator", "s", "", "Separator used when displaying multiple values")
 	rootCmd.AddCommand(showCmd)

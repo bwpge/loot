@@ -6,7 +6,7 @@ import (
 	"errors"
 	"math/rand/v2"
 	"os"
-	"slices"
+	"path"
 	"strings"
 
 	"loot/internal"
@@ -143,13 +143,27 @@ func (s *State) Filter(f entry.Filter) map[string]Entry {
 		}
 		v := s.Data[id]
 		for _, t := range f.Tags {
-			if slices.Contains(v.Tags, t) {
-				return true
+			// sane default behavior for terms not using special patterns
+			if !strings.ContainsAny(t, "*?[]-\\") {
+				t += "*"
+			}
+
+			for _, vt := range v.Tags {
+				if match, _ := path.Match(t, vt); match {
+					return true
+				}
 			}
 		}
 		for _, h := range f.Hosts {
-			if slices.Contains(v.Hosts, h) {
-				return true
+			// sane default behavior for terms not using special patterns
+			if !strings.ContainsAny(h, "*?[]-\\") {
+				h += "*"
+			}
+
+			for _, vh := range v.Hosts {
+				if match, _ := path.Match(h, vh); match {
+					return true
+				}
 			}
 		}
 		return false
