@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"loot/internal"
+	"loot/loot"
 
 	"github.com/spf13/cobra"
 )
@@ -21,7 +21,7 @@ var showCmd = &cobra.Command{
 	Short: "Display one or more entry values",
 	Run: func(cmd *cobra.Command, args []string) {
 		s, _ := loadLootFile()
-		filtered := s.Filter(internal.EntryFilter{
+		filtered := s.Filter(loot.Filter{
 			ID:    args,
 			Tags:  showTags,
 			Hosts: showHosts,

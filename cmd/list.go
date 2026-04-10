@@ -8,8 +8,8 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"loot/internal"
 	"loot/internal/ui"
+	"loot/loot"
 
 	"github.com/spf13/cobra"
 )
@@ -42,7 +42,7 @@ func init() {
 	rootCmd.AddCommand(listCmd)
 }
 
-func listPrintShort(data map[string]internal.Entry) {
+func listPrintShort(data map[string]loot.Entry) {
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 2, ' ', 0)
 	header := []string{"ID", "VALUE", "COMMENT", "TAGS", "HOSTS"}
 	fmt.Fprintln(w, strings.Join(header, "\t"))
@@ -62,7 +62,7 @@ func listPrintShort(data map[string]internal.Entry) {
 	w.Flush()
 }
 
-func listPrintLong(data map[string]internal.Entry) {
+func listPrintLong(data map[string]loot.Entry) {
 	for _, k := range slices.Sorted(maps.Keys(data)) {
 		v := data[k]
 		value := v.Value

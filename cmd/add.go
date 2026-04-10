@@ -5,9 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"loot/internal"
-	"loot/internal/config"
 	"loot/internal/ui"
+	"loot/loot"
 
 	"github.com/spf13/cobra"
 )
@@ -29,7 +28,7 @@ var addCmd = &cobra.Command{
 		}
 
 		s, f := loadLootFile()
-		doAdd := func(e internal.Entry, src string, skipDup bool) {
+		doAdd := func(e loot.Entry, src string, skipDup bool) {
 			if s.ContainsValue(e.Value) {
 				if skipDup {
 					return
@@ -52,10 +51,10 @@ var addCmd = &cobra.Command{
 
 		for _, arg := range args {
 			user, pass, found := strings.Cut(arg, ":")
-			if config.Get().DetectType && found && !strings.HasPrefix(pass, "//") {
+			if loot.Config().DetectType && found && !strings.HasPrefix(pass, "//") {
 				fmt.Println("detected username:password format")
 				doAdd(
-					internal.Entry{
+					loot.Entry{
 						Value:   user,
 						Comment: addComment,
 						Tags:    append(addTags, "username"),
@@ -65,7 +64,7 @@ var addCmd = &cobra.Command{
 					true,
 				)
 				doAdd(
-					internal.Entry{
+					loot.Entry{
 						Value:   pass,
 						Comment: addComment,
 						Tags:    append(addTags, "password"),
@@ -75,7 +74,7 @@ var addCmd = &cobra.Command{
 					true,
 				)
 				doAdd(
-					internal.Entry{
+					loot.Entry{
 						Value:   arg,
 						Comment: addComment,
 						Tags:    append(addTags, "credential"),
@@ -85,7 +84,7 @@ var addCmd = &cobra.Command{
 					false,
 				)
 			} else {
-				doAdd(internal.Entry{Value: arg, Comment: addComment, Tags: addTags, Hosts: addHosts}, arg, false)
+				doAdd(loot.Entry{Value: arg, Comment: addComment, Tags: addTags, Hosts: addHosts}, arg, false)
 			}
 		}
 		for _, f := range addInputFiles {
@@ -94,7 +93,7 @@ var addCmd = &cobra.Command{
 				bail(err)
 			}
 			doAdd(
-				internal.Entry{
+				loot.Entry{
 					Value:   string(bytes),
 					Comment: addComment,
 					Tags:    addTags,

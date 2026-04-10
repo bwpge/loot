@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"loot/internal"
 	"loot/internal/ui"
+	"loot/loot"
 
 	"github.com/spf13/cobra"
 )
@@ -38,7 +38,7 @@ var initCmd = &cobra.Command{
 			bail(err)
 		}
 
-		s := internal.NewState()
+		s := loot.NewState()
 		err := s.Save(lootFile)
 		if err != nil {
 			bail(err)

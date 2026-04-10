@@ -1,4 +1,4 @@
-package internal
+package state
 
 import (
 	"encoding/hex"
@@ -9,27 +9,24 @@ import (
 	"slices"
 	"strings"
 
+	"loot/internal"
 	"loot/internal/config"
+	"loot/internal/entry"
 )
-
-type Entry struct {
-	Value   string   `json:"value"`
-	Comment string   `json:"comment"`
-	Tags    []string `json:"tags"`
-	Hosts   []string `json:"hosts"`
-}
 
 var (
 	errEntryNotFound = errors.New("entry id not found")
 	errAmbiguousID   = errors.New("id matches multiple entries")
 )
 
+type Entry = entry.Entry
+
 type State struct {
-	Hashes HashSet          `json:"hashes"`
+	Hashes internal.HashSet `json:"hashes"`
 	Data   map[string]Entry `json:"data"`
 }
 
-func NewState() *State {
+func New() *State {
 	return &State{
 		Data: make(map[string]Entry),
 	}
@@ -132,13 +129,7 @@ func (s *State) FindID(prefix string) (string, error) {
 	return result, nil
 }
 
-type EntryFilter struct {
-	ID    []string
-	Tags  []string
-	Hosts []string
-}
-
-func (s *State) Filter(f EntryFilter) map[string]Entry {
+func (s *State) Filter(f entry.Filter) map[string]Entry {
 	result := make(map[string]Entry)
 	if len(f.ID)+len(f.Tags)+len(f.Hosts) == 0 {
 		return s.Data
