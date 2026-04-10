@@ -6,6 +6,7 @@ import (
 	"errors"
 	"math/rand/v2"
 	"os"
+	"slices"
 	"strings"
 )
 
@@ -134,6 +135,47 @@ func (s *State) FindID(prefix string) (string, error) {
 	}
 
 	return result, nil
+}
+
+type EntryFilter struct {
+	ID    []string
+	Tags  []string
+	Hosts []string
+}
+
+func (s *State) Filter(f EntryFilter) map[string]Entry {
+	result := make(map[string]Entry)
+	if len(f.ID)+len(f.Tags)+len(f.Hosts) == 0 {
+		return s.Data
+	}
+
+	filterFunc := func(id string) bool {
+		for _, i := range f.ID {
+			if strings.HasPrefix(id, i) {
+				return true
+			}
+		}
+		v := s.Data[id]
+		for _, t := range f.Tags {
+			if slices.Contains(v.Tags, t) {
+				return true
+			}
+		}
+		for _, h := range f.Hosts {
+			if slices.Contains(v.Hosts, h) {
+				return true
+			}
+		}
+		return false
+	}
+
+	for k, v := range s.Data {
+		if filterFunc(k) {
+			result[k] = v
+		}
+	}
+
+	return result
 }
 
 func (s *State) Clear() {

@@ -2,30 +2,42 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+
+	"loot/internal"
 
 	"github.com/spf13/cobra"
 )
 
-var showNoNewline bool
+var (
+	showNoNewline bool
+	showTags      []string
+	showHosts     []string
+	showSep       string
+)
 
 var showCmd = &cobra.Command{
-	Use:   "show <id>",
-	Short: "Display an entry value",
-	Args:  cobra.ExactArgs(1),
+	Use:   "show [filter]",
+	Short: "Display one or more entry values",
 	Run: func(cmd *cobra.Command, args []string) {
 		s, _ := loadLootFile()
-		id, err := s.FindID(args[0])
-		if err != nil {
-			bail(err)
-		}
-		e, err := s.Get(id)
-		if err != nil {
-			bail(err)
+		filtered := s.Filter(internal.EntryFilter{
+			ID:    args,
+			Tags:  showTags,
+			Hosts: showHosts,
+		})
+
+		values := []string{}
+		for _, e := range filtered {
+			values = append(values, e.Value)
 		}
 
-		fmt.Print(e.Value)
+		if showSep == "" {
+			showSep = "\n"
+		}
+		fmt.Print(strings.Join(values, showSep))
 		if !showNoNewline {
-			fmt.Println()
+			fmt.Println("")
 		}
 	},
 	ValidArgsFunction: idCompletion,
@@ -34,5 +46,11 @@ var showCmd = &cobra.Command{
 func init() {
 	showCmd.Flags().
 		BoolVarP(&showNoNewline, "no-newline", "n", false, "Do not display a trailing newline")
+	showCmd.Flags().
+		StringSliceVarP(&showTags, "tag", "t", []string{}, "Only display entries with given tags")
+	showCmd.Flags().
+		StringSliceVarP(&showHosts, "host", "H", []string{}, "Only display entries with given hosts")
+	showCmd.Flags().
+		StringVarP(&showSep, "separator", "s", "", "Separator used when displaying multiple values")
 	rootCmd.AddCommand(showCmd)
 }

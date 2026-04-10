@@ -14,17 +14,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	listLong bool
-	listTag  string
-	listHost string
-)
+var listLong bool
 
 var listCmd = &cobra.Command{
-	Use:     "list [filter]",
+	Use:     "list",
 	Aliases: []string{"ls"},
 	Short:   "List entries in the loot file",
-	Args:    cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		s, _ := loadLootFile()
 		if len(s.Data) == 0 {
@@ -32,38 +27,18 @@ var listCmd = &cobra.Command{
 			return
 		}
 
-		filter := ""
-		if len(args) == 1 {
-			filter = args[0]
-		}
-
-		filtered := make(map[string]internal.Entry)
-		for k, v := range s.Data {
-			if (filter == "" || strings.HasPrefix(k, filter)) &&
-				(listTag == "" || slices.Contains(v.Tags, listTag)) &&
-				(listHost == "" || slices.Contains(v.Hosts, listHost)) {
-				filtered[k] = v
-			}
-		}
-		skipped := len(s.Data) - len(filtered)
-
 		if listLong {
-			listPrintLong(filtered)
+			listPrintLong(s.Data)
 		} else {
-			listPrintShort(filtered)
-		}
-
-		if skipped > 0 {
-			fmt.Printf("\nentries not shown: %d", skipped)
+			listPrintShort(s.Data)
 		}
 	},
 	ValidArgsFunction: idCompletion,
 }
 
 func init() {
-	listCmd.Flags().BoolVarP(&listLong, "long", "l", false, "Display entries in detailed format")
-	listCmd.Flags().StringVarP(&listTag, "tag", "t", "", "Only display entries with this tag")
-	listCmd.Flags().StringVarP(&listHost, "host", "H", "", "Only display entries with this host")
+	listCmd.Flags().
+		BoolVarP(&listLong, "long", "l", false, "Display entries in detailed format (exclusive with -r)")
 	rootCmd.AddCommand(listCmd)
 }
 
