@@ -163,28 +163,6 @@ func loadLootFileNoErr() *loot.State {
 	return s
 }
 
-func idCompletion(
-	cmd *cobra.Command,
-	args []string,
-	toComplete string,
-) ([]string, cobra.ShellCompDirective) {
-	values := []string{}
-	s := loadLootFileNoErr()
-	if s == nil {
-		return values, cobra.ShellCompDirectiveNoFileComp
-	}
-
-	for k, v := range s.Data {
-		desc := truncate(v.Value)
-		if v.Comment != "" {
-			desc += " (" + v.Comment + ")"
-		}
-		values = append(values, k+"\t"+desc)
-	}
-
-	return values, cobra.ShellCompDirectiveNoFileComp
-}
-
 func truncate(v string) string {
 	s, _, _ := strings.Cut(v, "\n")
 	if len(s) > 50 {

@@ -101,6 +101,7 @@ var addCmd = &cobra.Command{
 		}
 		s.Save(f)
 	},
+	ValidArgsFunction: emptyNoFileCompletion,
 }
 
 func init() {

@@ -17,7 +17,7 @@ var (
 )
 
 var cmdUpdate = &cobra.Command{
-	Use:   "update <id>",
+	Use:   "update id",
 	Short: "Update an entry in the loot file",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

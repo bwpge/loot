@@ -12,6 +12,7 @@ var versionCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(rootCmd.Name(), buildVersion())
 	},
+	ValidArgsFunction: emptyNoFileCompletion,
 }
 
 func init() {

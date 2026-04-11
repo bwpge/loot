@@ -32,6 +32,7 @@ var statusCmd = &cobra.Command{
 		fmt.Println("config:")
 		printJSON(loot.Config())
 	},
+	ValidArgsFunction: emptyNoFileCompletion,
 }
 
 func printJSON(v any) {
