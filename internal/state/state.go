@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"loot/internal"
-	"loot/internal/config"
 	"loot/internal/entry"
 )
 
@@ -34,7 +33,7 @@ func New() *State {
 	}
 }
 
-func LoadState(path string) (*State, error) {
+func Load(path string) (*State, error) {
 	s := State{}
 	bytes, err := os.ReadFile(path)
 	if err != nil {
@@ -68,10 +67,6 @@ func (s *State) Add(e Entry) string {
 			break
 		}
 		id = generateID()
-	}
-
-	if len(e.Hosts) == 0 {
-		e.Hosts = config.Get().DefaultHosts
 	}
 
 	s.Data[id] = e

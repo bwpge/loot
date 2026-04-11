@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"loot/loot"
-
 	"github.com/spf13/cobra"
 )
 
@@ -30,8 +28,6 @@ var statusCmd = &cobra.Command{
 		fmt.Println("entries:       ", len(s.Data))
 		fmt.Println("unique values: ", len(s.Hashes))
 		fmt.Println("flags:         ", len(s.Flags))
-		fmt.Println("config:")
-		printJSON(loot.Config())
 	},
 	ValidArgsFunction: emptyNoFileCompletion,
 }

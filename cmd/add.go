@@ -3,10 +3,9 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"strings"
 
+	"loot/internal/entry"
 	"loot/internal/ui"
-	"loot/loot"
 
 	"github.com/spf13/cobra"
 )
@@ -17,6 +16,7 @@ var (
 	addHosts      []string
 	addInputFiles []string
 	addComment    string
+	addDetectType bool
 )
 
 var addCmd = &cobra.Command{
@@ -28,9 +28,10 @@ var addCmd = &cobra.Command{
 		}
 
 		s, f := loadLootFile()
-		doAdd := func(e loot.Entry, skipDup bool) {
+		doAdd := func(e entry.Entry, skipDup bool) {
 			if s.ContainsValue(e.Value) {
 				if skipDup {
+					fmt.Println(ui.Comment("skipping duplicate: " + truncate(e.Value)))
 					return
 				}
 				if addForce {
@@ -50,47 +51,27 @@ var addCmd = &cobra.Command{
 		}
 
 		for _, arg := range args {
-			user, pass, found := strings.Cut(arg, ":")
-			if loot.Config().DetectType && found && !strings.HasPrefix(pass, "//") {
-				fmt.Println("detected username:password format")
-				doAdd(
-					loot.Entry{
-						Value:   user,
-						Comment: addComment,
-						Tags:    append(addTags, "username"),
-						Hosts:   addHosts,
-					},
-					true,
-				)
-				doAdd(
-					loot.Entry{
-						Value:   pass,
-						Comment: addComment,
-						Tags:    append(addTags, "password"),
-						Hosts:   addHosts,
-					},
-					true,
-				)
-				doAdd(
-					loot.Entry{
-						Value:   arg,
-						Comment: addComment,
-						Tags:    append(addTags, "credential"),
-						Hosts:   addHosts,
-					},
-					false,
-				)
-			} else {
-				doAdd(loot.Entry{Value: arg, Comment: addComment, Tags: addTags, Hosts: addHosts}, false)
+			e := entry.Entry{Value: arg, Comment: addComment, Tags: addTags, Hosts: addHosts}
+			doAdd(e, false)
+
+			if addDetectType {
+				entries, s := entry.DetectValues(e)
+				if s != "" {
+					fmt.Println("detected format", s)
+				}
+				for _, e := range entries {
+					doAdd(e, true)
+				}
 			}
 		}
+
 		for _, f := range addInputFiles {
 			bytes, err := os.ReadFile(f)
 			if err != nil {
 				bail(err)
 			}
 			doAdd(
-				loot.Entry{
+				entry.Entry{
 					Value:   string(bytes),
 					Comment: addComment,
 					Tags:    addTags,
@@ -105,6 +86,8 @@ var addCmd = &cobra.Command{
 }
 
 func init() {
+	addCmd.Flags().
+		BoolVarP(&addDetectType, "detect-type", "d", true, "Detect common formats like user@domain and create additional entries")
 	addCmd.Flags().BoolVarP(&addForce, "force", "f", false, "Allow adding duplicate entry values")
 	addCmd.Flags().
 		StringSliceVarP(&addInputFiles, "input", "i", []string{}, "Add an entry value by file (useful for e.g., ssh keys)")

@@ -46,7 +46,7 @@ var listCmd = &cobra.Command{
 
 func printEntries(s *state.State, filter entry.Filter) {
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 2, ' ', 0)
-	header := []string{"ID", "VALUE", "COMMENT", "TAGS", "HOSTS"}
+	header := []string{"ID", "VALUE", "TAGS", "HOSTS", "COMMENT"}
 	fmt.Fprintln(w, strings.Join(header, "\t"))
 
 	data := s.Filter(filter)
@@ -55,9 +55,9 @@ func printEntries(s *state.State, filter entry.Filter) {
 		fields := []string{
 			k,
 			truncate(v.Value),
-			truncate(v.Comment),
 			truncate(strings.Join(v.Tags, ", ")),
 			truncate(strings.Join(v.Hosts, ", ")),
+			truncate(v.Comment),
 		}
 		fmt.Fprintln(w, strings.Join(fields, "\t"))
 	}

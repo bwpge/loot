@@ -8,8 +8,8 @@ import (
 	"runtime/debug"
 	"strings"
 
+	"loot/internal/state"
 	"loot/internal/ui"
-	"loot/loot"
 
 	"github.com/spf13/cobra"
 )
@@ -62,15 +62,6 @@ var rootCmd = &cobra.Command{
 			return err
 		}
 
-		configFile, err := findConfigFile()
-		if err != nil {
-			warn("failed to locate config file:", err)
-		}
-		err = loot.LoadConfig(configFile)
-		if err != nil {
-			warn("failed to load config:", err)
-		}
-
 		return nil
 	},
 }
@@ -115,26 +106,7 @@ func findLootFile() (string, error) {
 	return filepath.Join(cwd, lootFileName), nil
 }
 
-func findConfigFile() (string, error) {
-	confDir, err := os.UserConfigDir()
-	if err != nil {
-		return "", err
-	}
-	paths := []string{confDir + "/loot/config.json", "/etc/loot.json"}
-
-	for _, f := range paths {
-		_, err := os.Stat(f)
-		if err == nil {
-			return f, nil
-		} else if !errors.Is(err, os.ErrNotExist) {
-			return "", err
-		}
-	}
-
-	return "", nil
-}
-
-func loadLootFile() (*loot.State, string) {
+func loadLootFile() (*state.State, string) {
 	f, err := findLootFile()
 	if err != nil {
 		bail(err)
@@ -142,14 +114,14 @@ func loadLootFile() (*loot.State, string) {
 	if _, err = os.Stat(f); errors.Is(err, os.ErrNotExist) {
 		bail("no loot file found (run", ui.Cli("loot init"), "to create)")
 	}
-	s, err := loot.LoadState(f)
+	s, err := state.Load(f)
 	if err != nil {
 		bail(err)
 	}
 	return s, f
 }
 
-func loadLootFileNoErr() *loot.State {
+func loadLootFileNoErr() *state.State {
 	f, err := findLootFile()
 	if err != nil {
 		return nil
@@ -157,7 +129,7 @@ func loadLootFileNoErr() *loot.State {
 	if _, err = os.Stat(f); errors.Is(err, os.ErrNotExist) {
 		return nil
 	}
-	s, err := loot.LoadState(f)
+	s, err := state.Load(f)
 	if err != nil {
 		return nil
 	}

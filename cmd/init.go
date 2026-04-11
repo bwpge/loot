@@ -5,17 +5,13 @@ import (
 	"fmt"
 	"os"
 
+	"loot/internal/state"
 	"loot/internal/ui"
-	"loot/loot"
 
 	"github.com/spf13/cobra"
 )
 
-var (
-	initForce        bool
-	initDefaultHosts []string
-	initDetectType   bool
-)
+var initForce bool
 
 var initCmd = &cobra.Command{
 	Use:   "init",
@@ -43,7 +39,7 @@ var initCmd = &cobra.Command{
 			bail(err)
 		}
 
-		s := loot.NewState()
+		s := state.New()
 		err = s.Save(lootFile)
 		if err != nil {
 			bail(err)
@@ -60,8 +56,5 @@ var initCmd = &cobra.Command{
 
 func init() {
 	initCmd.Flags().BoolVarP(&initForce, "force", "f", false, "Overwrite existing loot file")
-	initCmd.Flags().BoolVarP(&initDetectType, "detect-type", "d", true, "")
-	initCmd.Flags().
-		StringSliceVarP(&initDefaultHosts, "default-hosts", "H", []string{}, "Default host attribution for new entries")
 	rootCmd.AddCommand(initCmd)
 }
