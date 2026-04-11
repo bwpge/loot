@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"loot/internal/entry"
-	"loot/internal/ui"
-
+	"github.com/bwpge/loot/internal/entry"
+	"github.com/bwpge/loot/internal/ui"
 	"github.com/spf13/cobra"
 )
 

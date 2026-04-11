@@ -1,4 +1,4 @@
-module loot
+module github.com/bwpge/loot
 
 go 1.26.1
 

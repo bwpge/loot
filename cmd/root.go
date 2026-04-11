@@ -8,9 +8,8 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"loot/internal/state"
-	"loot/internal/ui"
-
+	"github.com/bwpge/loot/internal/state"
+	"github.com/bwpge/loot/internal/ui"
 	"github.com/spf13/cobra"
 )
 

@@ -9,8 +9,8 @@ import (
 	"path"
 	"strings"
 
-	"loot/internal"
-	"loot/internal/entry"
+	"github.com/bwpge/loot/internal"
+	"github.com/bwpge/loot/internal/entry"
 )
 
 var (

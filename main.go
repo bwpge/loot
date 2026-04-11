@@ -1,7 +1,7 @@
 package main
 
 import (
-	"loot/cmd"
+	"github.com/bwpge/loot/cmd"
 )
 
 func main() {

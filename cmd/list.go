@@ -8,9 +8,8 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"loot/internal/entry"
-	"loot/internal/state"
-
+	"github.com/bwpge/loot/internal/entry"
+	"github.com/bwpge/loot/internal/state"
 	"github.com/spf13/cobra"
 )
 

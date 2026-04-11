@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"loot/internal/entry"
-
+	"github.com/bwpge/loot/internal/entry"
 	"github.com/spf13/cobra"
 )
 

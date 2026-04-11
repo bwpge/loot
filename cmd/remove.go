@@ -3,8 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"loot/internal/ui"
-
+	"github.com/bwpge/loot/internal/ui"
 	"github.com/spf13/cobra"
 )
 
