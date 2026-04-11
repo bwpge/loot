@@ -8,46 +8,79 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"loot/internal/entry"
+	"loot/internal/state"
+
 	"github.com/spf13/cobra"
 )
 
+var (
+	listAll   bool
+	listFlags bool
+	listTags  []string
+	listHosts []string
+)
+
 var listCmd = &cobra.Command{
-	Use:     "list",
+	Use:     "list [filter]",
 	Aliases: []string{"ls"},
 	Short:   "List entries in the loot file",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := cobra.NoArgs(cmd, args)
-		if err != nil {
-			bail(err)
-		}
-
 		s, _ := loadLootFile()
-		if len(s.Data) == 0 {
-			fmt.Fprintln(os.Stderr, "no entries to show")
-			return
+		if !listFlags {
+			printEntries(s, entry.Filter{
+				ID:    args,
+				Tags:  listTags,
+				Hosts: listHosts,
+			})
 		}
-
-		w := tabwriter.NewWriter(os.Stdout, 1, 1, 2, ' ', 0)
-		header := []string{"ID", "VALUE", "COMMENT", "TAGS", "HOSTS"}
-		fmt.Fprintln(w, strings.Join(header, "\t"))
-
-		for _, k := range slices.Sorted(maps.Keys(s.Data)) {
-			v := s.Data[k]
-			fields := []string{
-				k,
-				truncate(v.Value),
-				truncate(v.Comment),
-				truncate(strings.Join(v.Tags, ", ")),
-				truncate(strings.Join(v.Hosts, ", ")),
-			}
-			fmt.Fprintln(w, strings.Join(fields, "\t"))
+		if listAll {
+			fmt.Println()
 		}
-
-		w.Flush()
+		if listFlags || listAll {
+			printFlags(s)
+		}
 	},
 	ValidArgsFunction: idCompletion,
 }
 
+func printEntries(s *state.State, filter entry.Filter) {
+	w := tabwriter.NewWriter(os.Stdout, 1, 1, 2, ' ', 0)
+	header := []string{"ID", "VALUE", "COMMENT", "TAGS", "HOSTS"}
+	fmt.Fprintln(w, strings.Join(header, "\t"))
+
+	data := s.Filter(filter)
+	for _, k := range slices.Sorted(maps.Keys(data)) {
+		v := s.Data[k]
+		fields := []string{
+			k,
+			truncate(v.Value),
+			truncate(v.Comment),
+			truncate(strings.Join(v.Tags, ", ")),
+			truncate(strings.Join(v.Hosts, ", ")),
+		}
+		fmt.Fprintln(w, strings.Join(fields, "\t"))
+	}
+	w.Flush()
+}
+
+func printFlags(s *state.State) {
+	w := tabwriter.NewWriter(os.Stdout, 1, 1, 2, ' ', 0)
+	header := []string{"FLAG", "TYPE", "HOST"}
+	fmt.Fprintln(w, strings.Join(header, "\t"))
+
+	for id, flag := range s.Flags {
+		fmt.Fprintln(w, strings.Join([]string{id, flag.Owner, flag.Host}, "\t"))
+	}
+	w.Flush()
+}
+
 func init() {
+	listCmd.Flags().BoolVarP(&listAll, "all", "a", false, "List both entries and flags")
+	listCmd.Flags().BoolVarP(&listFlags, "flags", "f", false, "Only list captured flags")
+	listCmd.Flags().
+		StringSliceVarP(&listTags, "tag", "t", []string{}, "Only display entries matching given tags")
+	listCmd.Flags().
+		StringSliceVarP(&listHosts, "host", "H", []string{}, "Only display entries matching given hosts")
 	rootCmd.AddCommand(listCmd)
 }

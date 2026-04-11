@@ -29,6 +29,7 @@ var statusCmd = &cobra.Command{
 		fmt.Println("loot file:     ", f)
 		fmt.Println("entries:       ", len(s.Data))
 		fmt.Println("unique values: ", len(s.Hashes))
+		fmt.Println("flags:         ", len(s.Flags))
 		fmt.Println("config:")
 		printJSON(loot.Config())
 	},

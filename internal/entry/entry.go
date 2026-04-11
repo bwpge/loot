@@ -12,3 +12,8 @@ type Filter struct {
 	Tags  []string
 	Hosts []string
 }
+
+type Flag struct {
+	Owner string `json:"owner"`
+	Host  string `json:"host"`
+}

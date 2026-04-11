@@ -76,6 +76,7 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
+	rootCmd.SetErrPrefix(ui.ColorErr.Sprint("error:"))
 	rootCmd.PersistentFlags().
 		StringVarP(&lootFile, "loot-file", "L", "", "explicit loot file path to use")
 	rootCmd.SetVersionTemplate(

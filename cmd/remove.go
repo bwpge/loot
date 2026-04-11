@@ -8,28 +8,31 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var removeAll bool
+var (
+	removeAll  bool
+	removeFlag []string
+)
 
 var removeCmd = &cobra.Command{
 	Use:     "remove id [id...]",
 	Aliases: []string{"rm"},
 	Short:   "Remove an entry from the loot file",
 	Run: func(cmd *cobra.Command, args []string) {
-		s, f := loadLootFile()
+		if len(removeFlag)+len(args) == 0 && !removeAll {
+			bail("at least one id or", ui.Cli("--all"), "is required")
+		}
+		if len(removeFlag)+len(args) > 0 && removeAll {
+			bail("cannot use any arguments with", ui.Cli("--all"))
+		}
 
-		if len(args) == 0 && !removeAll {
-			bail("at least one entry ID or", ui.Cli("--all"), "is required")
-		}
-		if len(args) > 0 && removeAll {
-			bail("entry ID cannot be used with", ui.Cli("--all"))
-		}
+		s, f := loadLootFile()
 		if len(s.Data) == 0 {
 			warn("no entries to remove")
 			return
 		}
 
 		if removeAll {
-			count := len(s.Data)
+			count := len(s.Data) + len(s.Flags)
 			s.Clear()
 			s.Save(f)
 			fmt.Printf("removed all entries (%d total)\n", count)
@@ -48,6 +51,14 @@ var removeCmd = &cobra.Command{
 			}
 			fmt.Println("removed", id)
 		}
+		for _, arg := range removeFlag {
+			flag, err := s.FindFlag(arg)
+			if err != nil {
+				bail(err)
+			}
+			delete(s.Flags, flag)
+			fmt.Println("removed", flag)
+		}
 
 		s.Save(f)
 	},
@@ -55,6 +66,10 @@ var removeCmd = &cobra.Command{
 }
 
 func init() {
-	removeCmd.Flags().BoolVarP(&removeAll, "all", "a", false, "Remove all entries in the loot file")
+	removeCmd.Flags().
+		BoolVarP(&removeAll, "all", "a", false, "Remove all entries in the loot file (exclusive with -f)")
+	removeCmd.Flags().
+		StringSliceVarP(&removeFlag, "flag", "f", []string{}, "One or more flags to remove (exclusive with -a)")
+	removeCmd.RegisterFlagCompletionFunc("flag", flagCompletion)
 	rootCmd.AddCommand(removeCmd)
 }

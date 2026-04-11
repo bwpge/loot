@@ -15,20 +15,22 @@ import (
 )
 
 var (
-	errEntryNotFound = errors.New("entry id not found")
-	errAmbiguousID   = errors.New("id matches multiple entries")
+	errEntryNotFound   = errors.New("entry not found")
+	errAmbiguousPrefix = errors.New("value matches multiple entries")
 )
 
 type Entry = entry.Entry
 
 type State struct {
-	Hashes internal.HashSet `json:"hashes"`
-	Data   map[string]Entry `json:"data"`
+	Hashes internal.HashSet      `json:"hashes"`
+	Data   map[string]Entry      `json:"data"`
+	Flags  map[string]entry.Flag `json:"flags"`
 }
 
 func New() *State {
 	return &State{
-		Data: make(map[string]Entry),
+		Data:  make(map[string]Entry),
+		Flags: make(map[string]entry.Flag),
 	}
 }
 
@@ -98,13 +100,21 @@ func (s *State) Get(id string) (*Entry, error) {
 }
 
 func (s *State) FindID(prefix string) (string, error) {
+	return find(s.Data, prefix)
+}
+
+func (s *State) FindFlag(prefix string) (string, error) {
+	return find(s.Flags, prefix)
+}
+
+func find[T any](data map[string]T, prefix string) (string, error) {
 	result := ""
-	for k := range s.Data {
+	for k := range data {
 		if strings.HasPrefix(k, prefix) {
 			if result == "" {
 				result = k
 			} else {
-				return "", errAmbiguousID
+				return "", errAmbiguousPrefix
 			}
 		}
 	}
@@ -165,8 +175,13 @@ func (s *State) Filter(f entry.Filter) map[string]Entry {
 	return result
 }
 
+func (s *State) Capture(flag string, owner string, host string) {
+	s.Flags[flag] = entry.Flag{Owner: owner, Host: host}
+}
+
 func (s *State) Clear() {
 	clear(s.Data)
+	clear(s.Flags)
 	clear(s.Hashes)
 }
 
