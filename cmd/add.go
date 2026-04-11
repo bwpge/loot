@@ -28,7 +28,7 @@ var addCmd = &cobra.Command{
 		}
 
 		s, f := loadLootFile()
-		doAdd := func(e loot.Entry, src string, skipDup bool) {
+		doAdd := func(e loot.Entry, skipDup bool) {
 			if s.ContainsValue(e.Value) {
 				if skipDup {
 					return
@@ -46,7 +46,7 @@ var addCmd = &cobra.Command{
 				tags = ui.Comment(listString(e.Tags))
 			}
 
-			fmt.Println(ui.ID(id), "->", truncate(src), tags)
+			fmt.Println("added "+id, "->", truncate(e.Value), tags)
 		}
 
 		for _, arg := range args {
@@ -60,7 +60,6 @@ var addCmd = &cobra.Command{
 						Tags:    append(addTags, "username"),
 						Hosts:   addHosts,
 					},
-					user,
 					true,
 				)
 				doAdd(
@@ -70,7 +69,6 @@ var addCmd = &cobra.Command{
 						Tags:    append(addTags, "password"),
 						Hosts:   addHosts,
 					},
-					pass,
 					true,
 				)
 				doAdd(
@@ -80,11 +78,10 @@ var addCmd = &cobra.Command{
 						Tags:    append(addTags, "credential"),
 						Hosts:   addHosts,
 					},
-					arg,
 					false,
 				)
 			} else {
-				doAdd(loot.Entry{Value: arg, Comment: addComment, Tags: addTags, Hosts: addHosts}, arg, false)
+				doAdd(loot.Entry{Value: arg, Comment: addComment, Tags: addTags, Hosts: addHosts}, false)
 			}
 		}
 		for _, f := range addInputFiles {
@@ -99,7 +96,6 @@ var addCmd = &cobra.Command{
 					Tags:    addTags,
 					Hosts:   addHosts,
 				},
-				f,
 				false,
 			)
 		}

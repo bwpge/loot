@@ -21,6 +21,11 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize a new loot file",
 	Run: func(cmd *cobra.Command, args []string) {
+		err := cobra.NoArgs(cmd, args)
+		if err != nil {
+			bail(err)
+		}
+
 		forced := false
 		if _, err := os.Stat(lootFile); err == nil {
 			if !initForce {
@@ -39,7 +44,7 @@ var initCmd = &cobra.Command{
 		}
 
 		s := loot.NewState()
-		err := s.Save(lootFile)
+		err = s.Save(lootFile)
 		if err != nil {
 			bail(err)
 		}

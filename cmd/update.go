@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"slices"
 
 	"loot/internal/ui"
 
@@ -38,47 +39,50 @@ var cmdUpdate = &cobra.Command{
 			bail(err)
 		}
 
-		fmt.Println("updating:", ui.ID(id))
+		changes := [][]string{}
 
 		// special case, need to update hashes
-		if changed("value") {
-			fmt.Printf(
-				"  %s %s -> %s\n",
-				ui.Header("Value:"),
-				truncate(e.Value),
-				truncate(updateValue),
-			)
-			s.UpdateValue(id, updateValue)
+		if changed("value") && e.Value != updateValue {
+			changes = append(changes, []string{"value", truncate(e.Value), truncate(updateValue)})
+			e.Value = updateValue
 		}
-		if changed("comment") {
-			fmt.Printf(
-				"  %s %s -> %s\n",
-				ui.Header("Comment:"),
-				truncate(e.Comment),
-				truncate(updateComment),
+		if changed("comment") && e.Comment != updateComment {
+			changes = append(
+				changes,
+				[]string{"comment", truncate(e.Comment), truncate(updateComment)},
 			)
 			e.Comment = updateComment
 		}
-		if changed("tags") {
-			fmt.Printf(
-				"  %s %s -> %s\n",
-				ui.Header("Tags:"),
-				truncate(listString(e.Tags)),
-				truncate(listString(updateTags)),
+		if changed("tags") && !sameElems(e.Tags, updateTags) {
+			changes = append(
+				changes,
+				[]string{"tags", truncate(listString(e.Tags)), truncate(listString(updateTags))},
 			)
 			e.Tags = updateTags
 		}
-		if changed("hosts") {
-			fmt.Printf(
-				"  %s %s -> %s\n",
-				ui.Header("Hosts:"),
-				truncate(listString(e.Hosts)),
-				truncate(listString(updateHosts)),
+		if changed("hosts") && !sameElems(e.Hosts, updateHosts) {
+			changes = append(
+				changes,
+				[]string{"hosts", truncate(listString(e.Hosts)), truncate(listString(updateHosts))},
 			)
 			e.Hosts = updateHosts
 		}
 
+		if len(changes) == 0 {
+			fmt.Println("nothing to update")
+			return
+		}
+
 		s.Data[id] = *e
+
+		fmt.Println("updating " + id)
+		for _, change := range changes {
+			printChange(change[0], change[1], change[2])
+		}
+
+		if changed("value") {
+			s.UpdateHashes()
+		}
 
 		s.Save(f)
 	},
@@ -94,4 +98,37 @@ func init() {
 	cmdUpdate.Flags().
 		StringSliceVarP(&updateHosts, "hosts", "H", []string{}, "The new hosts for the entry (replaces all)")
 	rootCmd.AddCommand(cmdUpdate)
+}
+
+func sameElems(s1 []string, s2 []string) bool {
+	if len(s1) != len(s2) {
+		return false
+	}
+	for _, v := range s1 {
+		if !slices.Contains(s2, v) {
+			return false
+		}
+	}
+	for _, v := range s2 {
+		if !slices.Contains(s1, v) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func printChange(property string, old string, new string) {
+	if old == "" {
+		old = ui.Comment("<empty>")
+	} else {
+		old = ui.Old(old)
+	}
+	if new == "" {
+		new = ui.Comment("<empty>")
+	} else {
+		new = ui.New(new)
+	}
+
+	fmt.Printf("  %s: %s -> %s\n", property, old, new)
 }

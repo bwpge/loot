@@ -84,7 +84,7 @@ func (s *State) Remove(id string) error {
 	}
 
 	delete(s.Data, id)
-	s.updateHashes()
+	s.UpdateHashes()
 
 	return nil
 }
@@ -95,19 +95,6 @@ func (s *State) Get(id string) (*Entry, error) {
 		return nil, errEntryNotFound
 	}
 	return &e, nil
-}
-
-func (s *State) UpdateValue(id string, value string) error {
-	if _, found := s.Data[id]; !found {
-		return errEntryNotFound
-	}
-
-	e := s.Data[id]
-	e.Value = value
-	s.Data[id] = e
-	s.updateHashes()
-
-	return nil
 }
 
 func (s *State) FindID(prefix string) (string, error) {
@@ -183,7 +170,7 @@ func (s *State) Clear() {
 	clear(s.Hashes)
 }
 
-func (s *State) updateHashes() {
+func (s *State) UpdateHashes() {
 	// PERF: this is really expensive but we're not managing that many values
 	// so not worried about it at the moment. will fix if it becomes an issue.
 	clear(s.Hashes)

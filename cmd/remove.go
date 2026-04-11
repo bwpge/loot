@@ -11,7 +11,7 @@ import (
 var removeAll bool
 
 var removeCmd = &cobra.Command{
-	Use:     "remove <id>",
+	Use:     "remove id [id...]",
 	Aliases: []string{"rm"},
 	Short:   "Remove an entry from the loot file",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -42,11 +42,11 @@ var removeCmd = &cobra.Command{
 			if err != nil {
 				bail(err)
 			}
-			fmt.Println("removing:", ui.ID(id))
 			err = s.Remove(id)
 			if err != nil {
 				bail(err)
 			}
+			fmt.Println("removed", id)
 		}
 
 		s.Save(f)

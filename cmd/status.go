@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"loot/internal/ui"
 	"loot/loot"
 
 	"github.com/spf13/cobra"
@@ -16,6 +15,10 @@ var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Show the loot file status",
 	Run: func(cmd *cobra.Command, args []string) {
+		err := cobra.NoArgs(cmd, args)
+		if err != nil {
+			bail(err)
+		}
 		s, f := loadLootFile()
 
 		if statusDump {
@@ -23,10 +26,10 @@ var statusCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Println(ui.Header("Loot file:"), f)
-		fmt.Println(ui.Header("Entries:"), len(s.Data))
-		fmt.Println(ui.Header("Unique values:"), len(s.Hashes))
-		fmt.Println(ui.Header("Config:"))
+		fmt.Println("loot file:     ", f)
+		fmt.Println("entries:       ", len(s.Data))
+		fmt.Println("unique values: ", len(s.Hashes))
+		fmt.Println("config:")
 		printJSON(loot.Config())
 	},
 }
