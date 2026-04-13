@@ -36,9 +36,9 @@ func flagCompletion(
 	}
 
 	for k, v := range s.Flags {
-		desc := truncate(v.Owner)
+		desc := truncate(v.Type)
 		if v.Host != "" {
-			desc += " (" + v.Host + ")"
+			desc += " (type: " + v.Host + ")"
 		}
 		values = append(values, k+"\t"+desc)
 	}

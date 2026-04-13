@@ -19,6 +19,7 @@ type Filter struct {
 }
 
 type Flag struct {
+	Type  string `json:"type"`
 	Owner string `json:"owner"`
 	Host  string `json:"host"`
 }

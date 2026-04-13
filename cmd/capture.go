@@ -2,15 +2,18 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/bwpge/loot/internal/entry"
 	"github.com/bwpge/loot/internal/ui"
 	"github.com/spf13/cobra"
 )
 
 var (
-	captureUser bool
-	captureRoot bool
-	captureHost string
+	captureUser  bool
+	captureRoot  bool
+	captureOwner string
+	captureHost  string
 )
 
 var captureCmd = &cobra.Command{
@@ -28,12 +31,24 @@ var captureCmd = &cobra.Command{
 				"(not both)",
 			)
 		}
+
 		s, f := loadLootFile()
-		owner := "user"
+		ty := "user"
 		if captureRoot {
-			owner = "root"
+			ty = "root"
 		}
-		s.Capture(args[0], owner, captureHost)
+
+		target := os.Getenv("TARGET")
+		if target != "" && captureHost == "" {
+			fmt.Println("using TARGET environment variable as HOST")
+			captureHost = target
+		}
+
+		s.Capture(args[0], entry.Flag{
+			Type:  ty,
+			Owner: captureOwner,
+			Host:  captureHost,
+		})
 		s.Save(f)
 		fmt.Println("captured flag", args[0])
 	},
@@ -45,6 +60,8 @@ func init() {
 		BoolVarP(&captureUser, "user", "u", false, "Mark this as a user/local flag")
 	captureCmd.Flags().
 		BoolVarP(&captureRoot, "root", "r", false, "Mark this as a root/proof flag")
+	captureCmd.Flags().
+		StringVarP(&captureOwner, "owner", "o", "", "Owner of the flag (e.g., the user's name)")
 	captureCmd.Flags().StringVarP(&captureHost, "host", "H", "", "Host this flag belongs to")
 	rootCmd.AddCommand(captureCmd)
 }

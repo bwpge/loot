@@ -170,8 +170,8 @@ func (s *State) Filter(f entry.Filter) map[string]Entry {
 	return result
 }
 
-func (s *State) Capture(flag string, owner string, host string) {
-	s.Flags[flag] = entry.Flag{Owner: owner, Host: host}
+func (s *State) Capture(flag string, f entry.Flag) {
+	s.Flags[flag] = f
 }
 
 func (s *State) Clear() {

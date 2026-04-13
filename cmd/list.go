@@ -65,11 +65,11 @@ func printEntries(s *state.State, filter entry.Filter) {
 
 func printFlags(s *state.State) {
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 2, ' ', 0)
-	header := []string{"FLAG", "TYPE", "HOST"}
+	header := []string{"FLAG", "TYPE", "OWNER", "HOST"}
 	fmt.Fprintln(w, strings.Join(header, "\t"))
 
 	for id, flag := range s.Flags {
-		fmt.Fprintln(w, strings.Join([]string{id, flag.Owner, flag.Host}, "\t"))
+		fmt.Fprintln(w, strings.Join([]string{id, flag.Type, flag.Owner, flag.Host}, "\t"))
 	}
 	w.Flush()
 }
