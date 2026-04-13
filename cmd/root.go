@@ -16,40 +16,13 @@ import (
 const lootFileName = "loot.json"
 
 var (
-	Version  = "0.1.0"
-	Commit   = ""
+	version  string
 	lootFile string
 )
 
-func buildVersion() string {
-	info, ok := debug.ReadBuildInfo()
-	if !ok {
-		return Version
-	}
-
-	if Commit == "" {
-		for _, setting := range info.Settings {
-			if setting.Key == "vcs.revision" {
-				Commit = setting.Value
-				if len(Commit) > 7 {
-					Commit = Commit[:7]
-				}
-				break
-			}
-		}
-	}
-
-	if Commit != "" {
-		return Version + " (" + Commit + ")"
-	}
-
-	return Version
-}
-
 var rootCmd = &cobra.Command{
-	Use:     "loot",
-	Version: buildVersion(),
-	Short:   "Tool for storing and organizing loot during offensive security operations",
+	Use:   "loot",
+	Short: "Tool for storing and organizing loot during offensive security operations",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		var err error
 		if lootFile == "" {
@@ -72,6 +45,19 @@ func init() {
 	rootCmd.SetVersionTemplate(
 		`{{printf "%s %s" .Name .Version}}`,
 	)
+
+	if info, ok := debug.ReadBuildInfo(); ok {
+		splits := strings.Split(info.Main.Version, "-")
+		version = splits[0]
+
+		if len(splits) == 3 {
+			if splits[2] != "" {
+				version += " (" + splits[2] + ")"
+			}
+		}
+	}
+
+	rootCmd.Version = version
 }
 
 func Execute() {
