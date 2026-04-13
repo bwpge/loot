@@ -50,7 +50,7 @@ var initCmd = &cobra.Command{
 		}
 		fmt.Println("initialized loot file:", lootFile, forcedStr)
 	},
-	ValidArgsFunction: emptyNoFileCompletion,
+	ValidArgsFunction: cobra.NoFileCompletions,
 }
 
 func init() {

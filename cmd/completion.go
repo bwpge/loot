@@ -2,10 +2,6 @@ package cmd
 
 import "github.com/spf13/cobra"
 
-func emptyNoFileCompletion(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
-	return []string{}, cobra.ShellCompDirectiveNoFileComp
-}
-
 func idCompletion(
 	cmd *cobra.Command,
 	args []string,

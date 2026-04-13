@@ -29,7 +29,7 @@ var statusCmd = &cobra.Command{
 		fmt.Println("unique values: ", len(s.Hashes))
 		fmt.Println("flags:         ", len(s.Flags))
 	},
-	ValidArgsFunction: emptyNoFileCompletion,
+	ValidArgsFunction: cobra.NoFileCompletions,
 }
 
 func printJSON(v any) {

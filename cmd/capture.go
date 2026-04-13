@@ -37,7 +37,7 @@ var captureCmd = &cobra.Command{
 		s.Save(f)
 		fmt.Println("captured flag", args[0])
 	},
-	ValidArgsFunction: emptyNoFileCompletion,
+	ValidArgsFunction: cobra.NoFileCompletions,
 }
 
 func init() {

@@ -10,12 +10,12 @@ import (
 )
 
 var (
-	addForce      bool
-	addTags       []string
-	addHosts      []string
-	addInputFiles []string
-	addComment    string
-	addDetectType bool
+	addForce        bool
+	addTags         []string
+	addHosts        []string
+	addInputFiles   []string
+	addComment      string
+	addNoDetectType bool
 )
 
 var addCmd = &cobra.Command{
@@ -53,14 +53,16 @@ var addCmd = &cobra.Command{
 			e := entry.Entry{Value: arg, Comment: addComment, Tags: addTags, Hosts: addHosts}
 			doAdd(e, false)
 
-			if addDetectType {
-				entries, s := entry.DetectValues(e)
-				if s != "" {
-					fmt.Println("detected format", s)
-				}
-				for _, e := range entries {
-					doAdd(e, true)
-				}
+			if addNoDetectType {
+				return
+			}
+
+			entries, s := entry.DetectValues(e)
+			if s != "" {
+				fmt.Println("detected format", s)
+			}
+			for _, e := range entries {
+				doAdd(e, true)
 			}
 		}
 
@@ -81,12 +83,12 @@ var addCmd = &cobra.Command{
 		}
 		s.Save(f)
 	},
-	ValidArgsFunction: emptyNoFileCompletion,
+	ValidArgsFunction: cobra.NoFileCompletions,
 }
 
 func init() {
 	addCmd.Flags().
-		BoolVarP(&addDetectType, "detect-type", "d", true, "Detect common formats like user@domain and create additional entries")
+		BoolVarP(&addNoDetectType, "no-detect", "n", false, "Do not create additional entries by detecting common formats like user@domain")
 	addCmd.Flags().BoolVarP(&addForce, "force", "f", false, "Allow adding duplicate entry values")
 	addCmd.Flags().
 		StringSliceVarP(&addInputFiles, "input", "i", []string{}, "Add an entry value by file (useful for e.g., ssh keys)")
