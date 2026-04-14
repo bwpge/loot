@@ -39,7 +39,7 @@ var showCmd = &cobra.Command{
 			fmt.Println("")
 		}
 	},
-	ValidArgsFunction: idCompletion,
+	ValidArgsFunction: completeID,
 }
 
 func init() {
@@ -51,5 +51,9 @@ func init() {
 		StringSliceVarP(&showHosts, "host", "H", []string{}, "Only display entries matching given hosts")
 	showCmd.Flags().
 		StringVarP(&showSep, "separator", "s", "", "Separator used when displaying multiple values")
+
+	showCmd.RegisterFlagCompletionFunc("tag", completeTag)
+	showCmd.RegisterFlagCompletionFunc("host", completeHost)
+
 	rootCmd.AddCommand(showCmd)
 }

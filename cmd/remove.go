@@ -61,7 +61,7 @@ var removeCmd = &cobra.Command{
 
 		s.Save(f)
 	},
-	ValidArgsFunction: idCompletion,
+	ValidArgsFunction: completeID,
 }
 
 func init() {
@@ -69,6 +69,8 @@ func init() {
 		BoolVarP(&removeAll, "all", "a", false, "Remove all entries in the loot file (exclusive with -f)")
 	removeCmd.Flags().
 		StringSliceVarP(&removeFlag, "flag", "f", []string{}, "One or more flags to remove (exclusive with -a)")
-	removeCmd.RegisterFlagCompletionFunc("flag", flagCompletion)
+
+	removeCmd.RegisterFlagCompletionFunc("flag", completeFlag)
+
 	rootCmd.AddCommand(removeCmd)
 }

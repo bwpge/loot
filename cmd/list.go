@@ -40,7 +40,7 @@ var listCmd = &cobra.Command{
 			printFlags(s)
 		}
 	},
-	ValidArgsFunction: idCompletion,
+	ValidArgsFunction: completeID,
 }
 
 func printEntries(s *state.State, filter entry.Filter) {
@@ -81,5 +81,9 @@ func init() {
 		StringSliceVarP(&listTags, "tag", "t", []string{}, "Only display entries matching given tags")
 	listCmd.Flags().
 		StringSliceVarP(&listHosts, "host", "H", []string{}, "Only display entries matching given hosts")
+
+	listCmd.RegisterFlagCompletionFunc("tag", completeTag)
+	listCmd.RegisterFlagCompletionFunc("host", completeHost)
+
 	rootCmd.AddCommand(listCmd)
 }

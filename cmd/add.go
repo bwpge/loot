@@ -93,10 +93,14 @@ func init() {
 	addCmd.Flags().
 		StringSliceVarP(&addInputFiles, "input", "i", []string{}, "Add an entry value by file (useful for e.g., ssh keys)")
 	addCmd.Flags().
-		StringSliceVarP(&addTags, "type", "t", []string{}, "Type of entry (used for filtering)")
+		StringSliceVarP(&addTags, "tag", "t", []string{}, "Type of entry (used for filtering)")
 	addCmd.Flags().
 		StringVarP(&addComment, "comment", "c", "", "Additional note to store with the entry")
 	addCmd.Flags().
-		StringSliceVarP(&addHosts, "hosts", "H", []string{}, "Host attribution for new entries")
+		StringSliceVarP(&addHosts, "host", "H", []string{}, "Host attribution for new entries")
+
+	listCmd.RegisterFlagCompletionFunc("tag", completeTag)
+	listCmd.RegisterFlagCompletionFunc("host", completeHost)
+
 	rootCmd.AddCommand(addCmd)
 }

@@ -15,7 +15,7 @@ var (
 	updateHosts   []string
 )
 
-var cmdUpdate = &cobra.Command{
+var updateCmd = &cobra.Command{
 	Use:   "update id",
 	Short: "Update an entry in the loot file",
 	Args:  cobra.ExactArgs(1),
@@ -24,7 +24,7 @@ var cmdUpdate = &cobra.Command{
 			return cmd.Flags().Lookup(v).Changed
 		}
 
-		if !changed("value") && !changed("comment") && !changed("tags") && !changed("hosts") {
+		if !changed("value") && !changed("comment") && !changed("tag") && !changed("host") {
 			bail("at least one update flag is required")
 		}
 		s, f := loadLootFile()
@@ -52,14 +52,14 @@ var cmdUpdate = &cobra.Command{
 			)
 			e.Comment = updateComment
 		}
-		if changed("tags") && !sameElems(e.Tags, updateTags) {
+		if changed("tag") && !sameElems(e.Tags, updateTags) {
 			changes = append(
 				changes,
 				[]string{"tags", truncate(listString(e.Tags)), truncate(listString(updateTags))},
 			)
 			e.Tags = updateTags
 		}
-		if changed("hosts") && !sameElems(e.Hosts, updateHosts) {
+		if changed("host") && !sameElems(e.Hosts, updateHosts) {
 			changes = append(
 				changes,
 				[]string{"hosts", truncate(listString(e.Hosts)), truncate(listString(updateHosts))},
@@ -85,18 +85,22 @@ var cmdUpdate = &cobra.Command{
 
 		s.Save(f)
 	},
-	ValidArgsFunction: idCompletion,
+	ValidArgsFunction: completeID,
 }
 
 func init() {
-	cmdUpdate.Flags().StringVarP(&updateValue, "value", "v", "", "The new value for the entry")
-	cmdUpdate.Flags().
+	updateCmd.Flags().StringVarP(&updateValue, "value", "v", "", "The new value for the entry")
+	updateCmd.Flags().
 		StringVarP(&updateComment, "comment", "c", "", "The new comment for the entry")
-	cmdUpdate.Flags().
-		StringSliceVarP(&updateTags, "tags", "t", []string{}, "The new tags for the entry (replaces all)")
-	cmdUpdate.Flags().
-		StringSliceVarP(&updateHosts, "hosts", "H", []string{}, "The new hosts for the entry (replaces all)")
-	rootCmd.AddCommand(cmdUpdate)
+	updateCmd.Flags().
+		StringSliceVarP(&updateTags, "tag", "t", []string{}, "The new tags for the entry (replaces all)")
+	updateCmd.Flags().
+		StringSliceVarP(&updateHosts, "host", "H", []string{}, "The new hosts for the entry (replaces all)")
+
+	updateCmd.RegisterFlagCompletionFunc("tag", completeTag)
+	updateCmd.RegisterFlagCompletionFunc("host", completeHost)
+
+	rootCmd.AddCommand(updateCmd)
 }
 
 func sameElems(s1 []string, s2 []string) bool {

@@ -1,12 +1,13 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"maps"
+	"slices"
 
-func idCompletion(
-	cmd *cobra.Command,
-	args []string,
-	toComplete string,
-) ([]string, cobra.ShellCompDirective) {
+	"github.com/spf13/cobra"
+)
+
+func completeID(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
 	values := []string{}
 	s := loadLootFileNoErr()
 	if s == nil {
@@ -24,11 +25,7 @@ func idCompletion(
 	return values, cobra.ShellCompDirectiveNoFileComp
 }
 
-func flagCompletion(
-	cmd *cobra.Command,
-	args []string,
-	toComplete string,
-) ([]string, cobra.ShellCompDirective) {
+func completeFlag(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
 	values := []string{}
 	s := loadLootFileNoErr()
 	if s == nil {
@@ -44,4 +41,42 @@ func flagCompletion(
 	}
 
 	return values, cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeTag(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
+	values := []string{
+		"username",
+		"password",
+		"credential",
+		"domain",
+	}
+	s := loadLootFileNoErr()
+	if s == nil {
+		return values, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	set := make(map[string]struct{})
+	for _, e := range s.Data {
+		for _, t := range e.Tags {
+			set[t] = struct{}{}
+		}
+	}
+
+	return slices.Collect(maps.Keys(set)), cobra.ShellCompDirectiveNoFileComp
+}
+
+func completeHost(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
+	s := loadLootFileNoErr()
+	if s == nil {
+		return []string{}, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	set := make(map[string]struct{})
+	for _, e := range s.Data {
+		for _, h := range e.Hosts {
+			set[h] = struct{}{}
+		}
+	}
+
+	return slices.Collect(maps.Keys(set)), cobra.ShellCompDirectiveNoFileComp
 }
