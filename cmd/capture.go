@@ -36,10 +36,9 @@ var captureCmd = &cobra.Command{
 		if n != 1 {
 			bail(
 				"flag must be marked with exactly one of",
-				ui.Cli("--user"),
-				",",
-				ui.Cli("--root"),
-				", or",
+				ui.Cli("--user")+",",
+				ui.Cli("--root")+",",
+				"or",
 				ui.Cli("--admin"),
 			)
 		}

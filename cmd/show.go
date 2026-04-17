@@ -31,12 +31,13 @@ var showCmd = &cobra.Command{
 			values = append(values, e.Value)
 		}
 
-		if showSep == "" {
-			showSep = "\n"
+		sep := showSep
+		if sep == "" {
+			sep = "\n"
 		}
-		fmt.Print(strings.Join(values, showSep))
+		fmt.Print(strings.Join(values, sep))
 		if !showNoNewline {
-			fmt.Println("")
+			fmt.Println()
 		}
 	},
 	ValidArgsFunction: completeID,

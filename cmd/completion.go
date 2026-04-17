@@ -35,7 +35,7 @@ func completeFlag(*cobra.Command, []string, string) ([]string, cobra.ShellCompDi
 	for k, v := range s.Flags {
 		desc := truncate(v.Type)
 		if v.Host != "" {
-			desc += " (type: " + v.Host + ")"
+			desc += " (host: " + truncate(v.Host) + ")"
 		}
 		values = append(values, k+"\t"+desc)
 	}

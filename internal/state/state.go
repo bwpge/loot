@@ -193,15 +193,8 @@ func (s *State) Clear() {
 }
 
 func getID(value string) string {
-	hash := hashStr(value)
-	return hash[:12]
-}
-
-func hashStr(value string) string {
-	h := sha256.New()
-	h.Write([]byte(value))
-	sha256Hash := h.Sum(nil)
-	return hex.EncodeToString(sha256Hash)
+	sum := sha256.Sum256([]byte(value))
+	return hex.EncodeToString(sum[:])[:12]
 }
 
 func mergeSlices[T cmp.Ordered](a []T, b []T) []T {

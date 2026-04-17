@@ -47,13 +47,10 @@ func init() {
 	)
 
 	if info, ok := debug.ReadBuildInfo(); ok {
-		splits := strings.Split(info.Main.Version, "-")
-		version = splits[0]
-
-		if len(splits) == 3 {
-			if splits[2] != "" {
-				version += " (" + splits[2] + ")"
-			}
+		parts := strings.Split(info.Main.Version, "-")
+		version = parts[0]
+		if len(parts) == 3 && parts[2] != "" {
+			version += " (" + parts[2] + ")"
 		}
 	}
 
@@ -92,26 +89,28 @@ func findLootFile() (string, error) {
 }
 
 func loadLootFile() (*state.State, string) {
-	f, err := findLootFile()
-	if err != nil {
-		bail(err)
-	}
-	if _, err = os.Stat(f); errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(lootFile); errors.Is(err, os.ErrNotExist) {
 		bail("no loot file found (run", ui.Cli("loot init"), "to create)")
+	} else if err != nil {
+		bail(err)
 	}
-	s, err := state.Load(f)
+	s, err := state.Load(lootFile)
 	if err != nil {
 		bail(err)
 	}
-	return s, f
+	return s, lootFile
 }
 
 func loadLootFileNoErr() *state.State {
-	f, err := findLootFile()
-	if err != nil {
-		return nil
+	f := lootFile
+	if f == "" {
+		var err error
+		f, err = findLootFile()
+		if err != nil {
+			return nil
+		}
 	}
-	if _, err = os.Stat(f); errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(f); err != nil {
 		return nil
 	}
 	s, err := state.Load(f)

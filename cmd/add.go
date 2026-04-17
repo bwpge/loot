@@ -53,8 +53,8 @@ var addCmd = &cobra.Command{
 		}
 
 		values := args
-		for _, f := range addInputLines {
-			lines, err := os.ReadFile(f)
+		for _, path := range addInputLines {
+			lines, err := os.ReadFile(path)
 			if err != nil {
 				bail(err)
 			}
@@ -73,31 +73,29 @@ var addCmd = &cobra.Command{
 			doAdd(e)
 
 			if addNoDetectType {
-				return
+				continue
 			}
 
-			entries, s := entry.DetectValues(e)
-			if s != "" {
-				fmt.Println("detected format:", s)
+			entries, detected := entry.DetectValues(e)
+			if detected != "" {
+				fmt.Println("detected format:", detected)
 			}
 			for _, e := range entries {
 				doAdd(e)
 			}
 		}
 
-		for _, f := range addInputFiles {
-			bytes, err := os.ReadFile(f)
+		for _, path := range addInputFiles {
+			bytes, err := os.ReadFile(path)
 			if err != nil {
 				bail(err)
 			}
-			doAdd(
-				entry.Entry{
-					Value:   string(bytes),
-					Comment: addComment,
-					Tags:    addTags,
-					Hosts:   addHosts,
-				},
-			)
+			doAdd(entry.Entry{
+				Value:   string(bytes),
+				Comment: addComment,
+				Tags:    addTags,
+				Hosts:   addHosts,
+			})
 		}
 		s.Save(f)
 	},
@@ -118,8 +116,8 @@ func init() {
 	addCmd.Flags().
 		StringSliceVarP(&addHosts, "host", "H", []string{}, "Host attribution for the entry")
 
-	listCmd.RegisterFlagCompletionFunc("tag", completeTag)
-	listCmd.RegisterFlagCompletionFunc("host", completeHost)
+	addCmd.RegisterFlagCompletionFunc("tag", completeTag)
+	addCmd.RegisterFlagCompletionFunc("host", completeHost)
 
 	rootCmd.AddCommand(addCmd)
 }
