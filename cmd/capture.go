@@ -9,10 +9,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const captureNoOwner = "(none)"
+
 var (
-	captureUser  bool
-	captureRoot  bool
-	captureOwner string
+	captureUser  string
+	captureRoot  string
+	captureAdmin bool
 	captureHost  string
 )
 
@@ -22,20 +24,44 @@ var captureCmd = &cobra.Command{
 	Aliases: []string{"cap"},
 	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		if (!captureUser && !captureRoot) || (captureUser && captureRoot) {
+		userSet := cmd.Flags().Changed("user")
+		rootSet := cmd.Flags().Changed("root")
+
+		n := 0
+		for _, set := range []bool{userSet, rootSet, captureAdmin} {
+			if set {
+				n++
+			}
+		}
+		if n != 1 {
 			bail(
-				"flag must be marked with",
+				"flag must be marked with exactly one of",
 				ui.Cli("--user"),
-				"or",
+				",",
 				ui.Cli("--root"),
-				"(not both)",
+				", or",
+				ui.Cli("--admin"),
 			)
 		}
 
 		s, f := loadLootFile()
-		ty := "user"
-		if captureRoot {
+		var ty, owner string
+		switch {
+		case userSet:
+			ty = "user"
+			owner = captureUser
+			if owner == captureNoOwner {
+				owner = ""
+			}
+		case rootSet:
 			ty = "root"
+			owner = captureRoot
+			if owner == "a" {
+				owner = "Administrator"
+			}
+		case captureAdmin:
+			ty = "root"
+			owner = "Administrator"
 		}
 
 		target := os.Getenv("TARGET")
@@ -46,7 +72,7 @@ var captureCmd = &cobra.Command{
 
 		s.Capture(args[0], entry.Flag{
 			Type:  ty,
-			Owner: captureOwner,
+			Owner: owner,
 			Host:  captureHost,
 		})
 		s.Save(f)
@@ -56,12 +82,11 @@ var captureCmd = &cobra.Command{
 }
 
 func init() {
-	captureCmd.Flags().
-		BoolVarP(&captureUser, "user", "u", false, "Mark this as a user/local flag")
-	captureCmd.Flags().
-		BoolVarP(&captureRoot, "root", "r", false, "Mark this as a root/proof flag")
-	captureCmd.Flags().
-		StringVarP(&captureOwner, "owner", "o", "", "Owner of the flag (e.g., the user's name)")
+	captureCmd.Flags().StringVarP(&captureUser, "user", "u", "", "Mark as a user/local flag")
+	captureCmd.Flags().Lookup("user").NoOptDefVal = captureNoOwner
+	captureCmd.Flags().StringVarP(&captureRoot, "root", "r", "", "Mark as root/proof flag")
+	captureCmd.Flags().Lookup("root").NoOptDefVal = "root"
+	captureCmd.Flags().BoolVarP(&captureAdmin, "admin", "a", false, "Same as --root=Administrator")
 	captureCmd.Flags().StringVarP(&captureHost, "host", "H", "", "Host this flag belongs to")
 	rootCmd.AddCommand(captureCmd)
 }
