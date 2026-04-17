@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/bwpge/loot/internal/entry"
 	"github.com/bwpge/loot/internal/ui"
@@ -10,48 +11,66 @@ import (
 )
 
 var (
-	addForce        bool
 	addTags         []string
 	addHosts        []string
 	addInputFiles   []string
+	addInputLines   []string
 	addComment      string
 	addNoDetectType bool
 )
 
 var addCmd = &cobra.Command{
-	Use:   "add <value> [value...]",
+	Use:   "add value [value...]",
 	Short: "Add a new entry to loot file",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 && len(addInputFiles) == 0 {
-			bail("at least one value or input file must be provided")
+		if len(args) == 0 && len(addInputFiles) == 0 && len(addInputLines) == 0 {
+			bail("at least one value or", ui.Cli("--input"), "or", ui.Cli("--lines"), "is required")
 		}
 
 		s, f := loadLootFile()
-		doAdd := func(e entry.Entry, skipDup bool) {
-			if s.ContainsValue(e.Value) {
-				if skipDup {
-					fmt.Println(ui.Comment("skipping duplicate: " + truncate(e.Value)))
+		doAdd := func(e entry.Entry) {
+			_, found := s.Find(e.Value)
+			var id, op string
+			if found {
+				var changed bool
+				id, changed = s.Merge(e)
+				if !changed {
+					fmt.Println(ui.Comment("skipped duplicate: " + truncate(e.Value)))
 					return
 				}
-				if addForce {
-					warn("adding duplicate value")
-				} else {
-					bail("entry value already exists (use", ui.Cli("-f"), "to add anyway)")
-				}
+				op = "merged"
+			} else {
+				id = s.Add(e)
+				op = "added"
 			}
 
-			id := s.Add(e)
 			tags := ""
 			if len(e.Tags) > 0 {
 				tags = ui.Comment(listString(e.Tags))
 			}
 
-			fmt.Println("added "+id, "->", truncate(e.Value), tags)
+			fmt.Println(op, id, "->", truncate(e.Value), tags)
 		}
 
-		for _, arg := range args {
+		values := args
+		for _, f := range addInputLines {
+			lines, err := os.ReadFile(f)
+			if err != nil {
+				bail(err)
+			}
+
+			for line := range strings.SplitSeq(string(lines), "\n") {
+				line := strings.TrimSpace(line)
+				if line == "" || strings.HasPrefix(line, "#") {
+					continue
+				}
+				values = append(values, line)
+			}
+		}
+
+		for _, arg := range values {
 			e := entry.Entry{Value: arg, Comment: addComment, Tags: addTags, Hosts: addHosts}
-			doAdd(e, false)
+			doAdd(e)
 
 			if addNoDetectType {
 				return
@@ -62,7 +81,7 @@ var addCmd = &cobra.Command{
 				fmt.Println("detected format", s)
 			}
 			for _, e := range entries {
-				doAdd(e, true)
+				doAdd(e)
 			}
 		}
 
@@ -78,7 +97,6 @@ var addCmd = &cobra.Command{
 					Tags:    addTags,
 					Hosts:   addHosts,
 				},
-				false,
 			)
 		}
 		s.Save(f)
@@ -89,15 +107,16 @@ var addCmd = &cobra.Command{
 func init() {
 	addCmd.Flags().
 		BoolVarP(&addNoDetectType, "no-detect", "n", false, "Do not create additional entries by detecting common formats like user@domain")
-	addCmd.Flags().BoolVarP(&addForce, "force", "f", false, "Allow adding duplicate entry values")
 	addCmd.Flags().
-		StringSliceVarP(&addInputFiles, "input", "i", []string{}, "Add an entry value by file (useful for e.g., ssh keys)")
+		StringSliceVarP(&addInputFiles, "input", "i", []string{}, "Add file contents as entry value (useful for e.g., ssh keys)")
 	addCmd.Flags().
-		StringSliceVarP(&addTags, "tag", "t", []string{}, "Type of entry (used for filtering)")
+		StringSliceVarP(&addInputLines, "lines", "l", []string{}, "Add an entry per line in the given file (empty and # ignored)")
+	addCmd.Flags().
+		StringSliceVarP(&addTags, "tag", "t", []string{}, "Additional data to store with the entry (used for filtering)")
 	addCmd.Flags().
 		StringVarP(&addComment, "comment", "c", "", "Additional note to store with the entry")
 	addCmd.Flags().
-		StringSliceVarP(&addHosts, "host", "H", []string{}, "Host attribution for new entries")
+		StringSliceVarP(&addHosts, "host", "H", []string{}, "Host attribution for the entry")
 
 	listCmd.RegisterFlagCompletionFunc("tag", completeTag)
 	listCmd.RegisterFlagCompletionFunc("host", completeHost)

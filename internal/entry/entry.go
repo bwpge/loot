@@ -52,7 +52,8 @@ func DetectValues(e Entry) ([]Entry, string) {
 
 	// user:pass format
 	user, pass, found := strings.Cut(e.Value, ":")
-	if found && !strings.HasPrefix(pass, "//") {
+	// avoid detecting NTLM hashes with length check
+	if found && !strings.HasPrefix(pass, "//") && len(pass) <= 30 {
 		result = append(result,
 			Entry{
 				Value:   user,

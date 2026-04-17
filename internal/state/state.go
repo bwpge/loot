@@ -1,15 +1,17 @@
 package state
 
 import (
+	"cmp"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"math/rand/v2"
 	"os"
 	"path"
+	"reflect"
+	"slices"
 	"strings"
 
-	"github.com/bwpge/loot/internal"
 	"github.com/bwpge/loot/internal/entry"
 )
 
@@ -21,9 +23,8 @@ var (
 type Entry = entry.Entry
 
 type State struct {
-	Hashes internal.HashSet      `json:"hashes"`
-	Data   map[string]Entry      `json:"data"`
-	Flags  map[string]entry.Flag `json:"flags"`
+	Data  map[string]Entry      `json:"data"`
+	Flags map[string]entry.Flag `json:"flags"`
 }
 
 func New() *State {
@@ -56,32 +57,38 @@ func (s *State) Save(path string) error {
 	return err
 }
 
-func (s *State) ContainsValue(value string) bool {
-	return s.Hashes.Contains(value)
-}
-
 func (s *State) Add(e Entry) string {
-	id := generateID()
-	for {
-		if _, found := s.Data[id]; !found {
-			break
-		}
-		id = generateID()
-	}
-
+	id := getID(e.Value)
 	s.Data[id] = e
-	s.Hashes.Add(e.Value)
 
 	return id
+}
+
+func (s *State) Merge(e Entry) (string, bool) {
+	changed := false
+	old, found := s.Find(e.Value)
+	id := getID(e.Value)
+	if !found || reflect.DeepEqual(old, e) {
+		return id, changed
+	}
+
+	if e.Comment == "" {
+		e.Comment = old.Comment
+	}
+	e.Tags = mergeSlices(old.Tags, e.Tags)
+	changed = changed || !slices.Equal(old.Tags, e.Tags)
+	e.Hosts = mergeSlices(old.Hosts, e.Hosts)
+	changed = changed || !slices.Equal(old.Hosts, e.Hosts)
+	s.Data[id] = e
+
+	return id, changed
 }
 
 func (s *State) Remove(id string) error {
 	if _, found := s.Data[id]; !found {
 		return errEntryNotFound
 	}
-
 	delete(s.Data, id)
-	s.UpdateHashes()
 
 	return nil
 }
@@ -92,6 +99,12 @@ func (s *State) Get(id string) (*Entry, error) {
 		return nil, errEntryNotFound
 	}
 	return &e, nil
+}
+
+func (s *State) Find(value string) (Entry, bool) {
+	id := getID(value)
+	e, found := s.Data[id]
+	return e, found
 }
 
 func (s *State) FindID(prefix string) (string, error) {
@@ -177,24 +190,22 @@ func (s *State) Capture(flag string, f entry.Flag) {
 func (s *State) Clear() {
 	clear(s.Data)
 	clear(s.Flags)
-	clear(s.Hashes)
 }
 
-func (s *State) UpdateHashes() {
-	// PERF: this is really expensive but we're not managing that many values
-	// so not worried about it at the moment. will fix if it becomes an issue.
-	clear(s.Hashes)
-	for _, v := range s.Data {
-		s.Hashes.Add(v.Value)
-	}
+func getID(value string) string {
+	hash := hashStr(value)
+	return hash[:12]
 }
 
-const idLen = 6
+func hashStr(value string) string {
+	h := sha256.New()
+	h.Write([]byte(value))
+	sha256Hash := h.Sum(nil)
+	return hex.EncodeToString(sha256Hash)
+}
 
-func generateID() string {
-	b := make([]byte, idLen)
-	for i := range b {
-		b[i] = byte(rand.Uint32())
-	}
-	return hex.EncodeToString(b)
+func mergeSlices[T cmp.Ordered](a []T, b []T) []T {
+	c := append(a, b...)
+	slices.Sort(c)
+	return slices.Compact(c)
 }

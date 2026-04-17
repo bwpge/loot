@@ -40,7 +40,6 @@ var updateCmd = &cobra.Command{
 
 		changes := [][]string{}
 
-		// special case, need to update hashes
 		if changed("value") && e.Value != updateValue {
 			changes = append(changes, []string{"value", truncate(e.Value), truncate(updateValue)})
 			e.Value = updateValue
@@ -77,10 +76,6 @@ var updateCmd = &cobra.Command{
 		fmt.Println("updating " + id)
 		for _, change := range changes {
 			printChange(change[0], change[1], change[2])
-		}
-
-		if changed("value") {
-			s.UpdateHashes()
 		}
 
 		s.Save(f)
