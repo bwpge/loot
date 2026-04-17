@@ -27,7 +27,45 @@ type Flag struct {
 func DetectValues(e Entry) ([]Entry, string) {
 	var result []Entry
 
-	// user@domain format
+	// ntlm:lm
+	ntlmlmexp := regexp.MustCompile(`^([a-f0-9]{32}):[a-f0-9]{32}$`)
+	matches := ntlmlmexp.FindStringSubmatch(e.Value)
+	if len(matches) == 2 {
+		result = append(result,
+			Entry{
+				Value:   matches[1],
+				Comment: e.Comment,
+				Tags:    append(e.Tags, "ntlm"),
+				Hosts:   e.Hosts,
+			},
+		)
+		return result, "ntlm:lm hash"
+	}
+
+	// net-ntlmv2
+	ntlmv2exp := regexp.MustCompile(
+		`^([^:]+)::([^:]+):[a-fA-F0-9]{16}:[a-fA-F0-9]{32}:[a-fA-F0-9]+$`,
+	)
+	matches = ntlmv2exp.FindStringSubmatch(e.Value)
+	if len(matches) == 3 {
+		result = append(result,
+			Entry{
+				Value:   matches[1],
+				Comment: e.Comment,
+				Tags:    append(e.Tags, "username"),
+				Hosts:   e.Hosts,
+			},
+			Entry{
+				Value:   matches[2],
+				Comment: e.Comment,
+				Tags:    append(e.Tags, "nbdomain"),
+				Hosts:   e.Hosts,
+			},
+		)
+		return result, "net-ntlmv2"
+	}
+
+	// user@domain
 	user, domain, found := strings.Cut(e.Value, "@")
 	if found {
 		// this is by no means a good domain regex, but is good enough for guessing
@@ -50,9 +88,8 @@ func DetectValues(e Entry) ([]Entry, string) {
 		}
 	}
 
-	// user:pass format
+	// user:pass
 	user, pass, found := strings.Cut(e.Value, ":")
-	// avoid detecting NTLM hashes with length check
 	if found && !strings.HasPrefix(pass, "//") && len(pass) <= 30 {
 		result = append(result,
 			Entry{

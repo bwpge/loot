@@ -78,7 +78,7 @@ var addCmd = &cobra.Command{
 
 			entries, s := entry.DetectValues(e)
 			if s != "" {
-				fmt.Println("detected format", s)
+				fmt.Println("detected format:", s)
 			}
 			for _, e := range entries {
 				doAdd(e)
