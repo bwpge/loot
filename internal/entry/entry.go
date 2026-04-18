@@ -49,7 +49,8 @@ func DetectValues(e Entry) ([]Entry, string) {
 			return result, label
 		}
 	}
-	return nil, ""
+
+	return []Entry{e}, ""
 }
 
 func derive(parent Entry, value, tag string) Entry {

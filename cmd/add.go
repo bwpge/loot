@@ -76,10 +76,9 @@ var addCmd = &cobra.Command{
 			}
 
 			entries, detected := entry.DetectValues(e)
-			if detected == "" {
-				detected = "<unknown>"
+			if detected != "" {
+				fmt.Println("detected format:", ui.Cli(detected))
 			}
-			fmt.Println("detected format:", ui.Cli(detected))
 			for _, e := range entries {
 				doAdd(e)
 			}
