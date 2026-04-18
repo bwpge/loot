@@ -70,16 +70,16 @@ var addCmd = &cobra.Command{
 
 		for _, arg := range values {
 			e := entry.Entry{Value: arg, Comment: addComment, Tags: addTags, Hosts: addHosts}
-			doAdd(e)
-
 			if addNoDetectType {
+				doAdd(e)
 				continue
 			}
 
 			entries, detected := entry.DetectValues(e)
-			if detected != "" {
-				fmt.Println("detected format:", detected)
+			if detected == "" {
+				detected = "<unknown>"
 			}
+			fmt.Println("detected format:", ui.Cli(detected))
 			for _, e := range entries {
 				doAdd(e)
 			}
