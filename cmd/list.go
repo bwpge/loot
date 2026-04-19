@@ -27,11 +27,11 @@ var listCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		s, _ := loadLootFile()
 		if !listFlags {
-			printEntries(s, entry.Filter{
+			printEntries(s.Filter(entry.Filter{
 				ID:    args,
 				Tags:  listTags,
 				Hosts: listHosts,
-			})
+			}))
 		}
 		if listAll {
 			fmt.Println()
@@ -43,14 +43,13 @@ var listCmd = &cobra.Command{
 	ValidArgsFunction: completeID,
 }
 
-func printEntries(s *state.State, filter entry.Filter) {
+func printEntries(data map[string]state.Entry) {
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 2, ' ', 0)
 	header := []string{"ID", "VALUE", "TAGS", "HOSTS", "COMMENT"}
 	fmt.Fprintln(w, strings.Join(header, "\t"))
 
-	data := s.Filter(filter)
 	for _, k := range slices.Sorted(maps.Keys(data)) {
-		v := s.Data[k]
+		v := data[k]
 		fields := []string{
 			k,
 			truncate(v.Value),
