@@ -9,8 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const captureNoOwner = "(none)"
-
 var (
 	captureUser  string
 	captureRoot  string
@@ -49,9 +47,6 @@ var captureCmd = &cobra.Command{
 		case userSet:
 			ty = "user"
 			owner = captureUser
-			if owner == captureNoOwner {
-				owner = ""
-			}
 		case rootSet:
 			ty = "root"
 			owner = captureRoot
@@ -82,7 +77,6 @@ var captureCmd = &cobra.Command{
 
 func init() {
 	captureCmd.Flags().StringVarP(&captureUser, "user", "u", "", "Mark as a user/local flag")
-	captureCmd.Flags().Lookup("user").NoOptDefVal = captureNoOwner
 	captureCmd.Flags().StringVarP(&captureRoot, "root", "r", "", "Mark as root/proof flag")
 	captureCmd.Flags().Lookup("root").NoOptDefVal = "root"
 	captureCmd.Flags().BoolVarP(&captureAdmin, "admin", "a", false, "Same as --root=Administrator")
