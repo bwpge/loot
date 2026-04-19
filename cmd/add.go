@@ -52,6 +52,12 @@ var addCmd = &cobra.Command{
 			fmt.Println(op, id, "->", truncate(e.Value), tags)
 		}
 
+		target := os.Getenv("TARGET")
+		if target != "" && len(addHosts) == 0 {
+			fmt.Println("using TARGET environment variable as HOST")
+			captureHost = target
+		}
+
 		values := args
 		for _, path := range addInputLines {
 			lines, err := os.ReadFile(path)
