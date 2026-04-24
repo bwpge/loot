@@ -55,7 +55,7 @@ var addCmd = &cobra.Command{
 		target := os.Getenv("TARGET")
 		if target != "" && len(addHosts) == 0 {
 			fmt.Println("using TARGET environment variable as HOST")
-			captureHost = target
+			addHosts = []string{target}
 		}
 
 		values := args
