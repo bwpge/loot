@@ -10,6 +10,7 @@ type Entry struct {
 	Comment string   `json:"comment"`
 	Tags    []string `json:"tags"`
 	Hosts   []string `json:"hosts"`
+	Owned   bool     `json:"owned,omitempty"`
 }
 
 type Filter struct {
@@ -67,6 +68,7 @@ func derive(parent Entry, value, tag string) Entry {
 		Comment: parent.Comment,
 		Tags:    append(parent.Tags, tag),
 		Hosts:   parent.Hosts,
+		Owned:   parent.Owned,
 	}
 }
 

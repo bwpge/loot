@@ -45,13 +45,18 @@ var listCmd = &cobra.Command{
 
 func printEntries(data map[string]state.Entry) {
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 2, ' ', 0)
-	header := []string{"ID", "VALUE", "TAGS", "HOSTS", "COMMENT"}
+	header := []string{"ID", "OWNED", "VALUE", "TAGS", "HOSTS", "COMMENT"}
 	fmt.Fprintln(w, strings.Join(header, "\t"))
 
 	for _, k := range slices.Sorted(maps.Keys(data)) {
 		v := data[k]
+		owned := ""
+		if v.Owned {
+			owned = "yes"
+		}
 		fields := []string{
 			k,
+			owned,
 			truncate(v.Value),
 			truncate(strings.Join(v.Tags, ", ")),
 			truncate(strings.Join(v.Hosts, ", ")),

@@ -79,6 +79,8 @@ func (s *State) Merge(e Entry) (string, bool) {
 	changed = changed || !slices.Equal(old.Tags, e.Tags)
 	e.Hosts = mergeSlices(old.Hosts, e.Hosts)
 	changed = changed || !slices.Equal(old.Hosts, e.Hosts)
+	e.Owned = e.Owned || old.Owned
+	changed = changed || e.Owned != old.Owned
 	s.Data[id] = e
 
 	return id, changed

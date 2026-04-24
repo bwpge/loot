@@ -16,8 +16,11 @@ func completeID(*cobra.Command, []string, string) ([]string, cobra.ShellCompDire
 
 	for k, v := range s.Data {
 		desc := truncate(v.Value)
+		if v.Owned {
+			desc += " (owned)"
+		}
 		if v.Comment != "" {
-			desc += " (" + v.Comment + ")"
+			desc += " -- " + truncate(v.Comment)
 		}
 		values = append(values, k+"\t"+desc)
 	}

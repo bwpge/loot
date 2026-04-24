@@ -17,6 +17,7 @@ var (
 	addInputLines   []string
 	addComment      string
 	addNoDetectType bool
+	addOwned        bool
 )
 
 var addCmd = &cobra.Command{
@@ -75,7 +76,13 @@ var addCmd = &cobra.Command{
 		}
 
 		for _, arg := range values {
-			e := entry.Entry{Value: arg, Comment: addComment, Tags: addTags, Hosts: addHosts}
+			e := entry.Entry{
+				Value:   arg,
+				Comment: addComment,
+				Tags:    addTags,
+				Hosts:   addHosts,
+				Owned:   addOwned,
+			}
 			if addNoDetectType {
 				doAdd(e)
 				continue
@@ -100,6 +107,7 @@ var addCmd = &cobra.Command{
 				Comment: addComment,
 				Tags:    addTags,
 				Hosts:   addHosts,
+				Owned:   addOwned,
 			})
 		}
 		s.Save(f)
@@ -120,6 +128,8 @@ func init() {
 		StringVarP(&addComment, "comment", "c", "", "Additional note to store with the entry")
 	addCmd.Flags().
 		StringSliceVarP(&addHosts, "host", "H", []string{}, "Host attribution for the entry")
+	addCmd.Flags().
+		BoolVarP(&addOwned, "owned", "o", false, "Mark the entry as owned")
 
 	addCmd.RegisterFlagCompletionFunc("tag", completeTag)
 	addCmd.RegisterFlagCompletionFunc("host", completeHost)
