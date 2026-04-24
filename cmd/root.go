@@ -49,8 +49,28 @@ func init() {
 	if info, ok := debug.ReadBuildInfo(); ok {
 		parts := strings.Split(info.Main.Version, "-")
 		version = parts[0]
-		if len(parts) == 3 && parts[2] != "" {
-			version += " (" + parts[2] + ")"
+
+		var revision string
+		var modified bool
+		for _, s := range info.Settings {
+			switch s.Key {
+			case "vcs.revision":
+				revision = s.Value
+			case "vcs.modified":
+				modified = s.Value == "true"
+			}
+		}
+		if revision == "" && len(parts) == 3 {
+			revision = parts[2]
+		}
+		if len(revision) >= 7 {
+			revision = revision[:7]
+		}
+		if revision != "" {
+			if modified {
+				revision += "-dirty"
+			}
+			version += " (" + revision + ")"
 		}
 	}
 
